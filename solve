@@ -1,0 +1,3 @@
+#!/bin/bash
+base=day"$(printf "%02d" ${1:?})"
+.venv/bin/python ${base}.py <${base}.txt
