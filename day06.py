@@ -1,43 +1,40 @@
-d = -1j
-visited = set()
-obstacles = set()
-free = set()
+from collections import defaultdict
 
-for k, line in enumerate(open(0).readlines()):
-    for i, c in enumerate(line.strip()):
-        if c == '^':
-            init_pos = complex(i, k)
-        if c == '#':
-            obstacles |= {complex(i, k)}
+grid = defaultdict(str) | {
+    x + y * 1j: c
+    for y, line in enumerate(open(0).read().splitlines())
+    for x, c in enumerate(line)
+}
+(init_pos,) = (z for z, c in grid.items() if c == "^")
 
-def is_out(pos):
-    x, y = pos.real, pos.imag
-    return not (0 <= x <= i and 0 <= y <= k)
 
-def walk(init_pos, obstacles):
-    visited = set()
+def walk():
     pos = init_pos
-    d = -1j 
-    while not is_out(pos):
+    visited = set()
+    d = -1j
+    while grid[pos]:
         if (pos, d) in visited:
-            raise ValueError("Loop!")
+            return 1, visited
         visited.add((pos, d))
-        if pos + d in obstacles:
+        if grid[next_pos := pos + d] == "#":
             d *= 1j
         else:
-            pos = pos + d
-    return {p for p, d in visited}
+            pos = next_pos
+    return 0, visited
 
-path = walk(init_pos, obstacles)
-print(len(path))
 
-count = 0
+_, visited = walk()
+print(f"Part 1: {len({z for z, _ in visited})}")
 
-for position in path - {init_pos}:
-    try:
-        walk(init_pos, obstacles | {position})
-    except ValueError:
-        count += 1
-        print(f"Progress: {count}")
-print(count)
 
+def part2():
+    count = 0
+    for position in {z for z, _ in visited if z != init_pos}:
+        grid[position] = "#"
+        loop, _ = walk()
+        count += loop
+        grid[position] = "."
+    print(count)
+
+
+part2()
